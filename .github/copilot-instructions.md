@@ -16,3 +16,9 @@
 - Must fetch data from API routes using server components when possible, and use client components only for interactivity and state management.
 - Must handle loading states and error states gracefully, providing feedback to the user.
 - Avoid duplicating code by creating reusable components and hooks for common functionality.
+
+
+# Linting and formatting
+
+- Do not use ; at the end of lines.
+- Use single quotes for strings.
