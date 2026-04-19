@@ -5,10 +5,11 @@
 -- Execute this in Supabase Dashboard > SQL Editor
 -- =============================================================
 
--- 1. Add FK to auth.users (Prisma can't reference auth schema)
-ALTER TABLE public."user_roles"
-  ADD CONSTRAINT user_roles_user_id_fkey
-  FOREIGN KEY (user_id) REFERENCES auth.users ON DELETE CASCADE;
+-- 1. FK to auth.users REMOVED
+--    Prisma cannot handle cross-schema references (auth.users).
+--    Referential integrity is enforced at the application level.
+--    If you need cascade deletes, use a Supabase Database Webhook
+--    or a trigger inside the auth schema.
 
 COMMENT ON TABLE public."user_roles" IS 'Application roles assigned to each user.';
 

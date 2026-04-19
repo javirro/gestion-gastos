@@ -13,6 +13,7 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+  schemas   = ["public"]
 }
 
 enum Role {
@@ -23,6 +24,7 @@ enum Role {
   DIRECTIVOS
 
   @@map("app_role")
+  @@schema("public")
 }
 
 model UserRole {
@@ -33,4 +35,86 @@ model UserRole {
 
   @@unique([userId, role])
   @@map("user_roles")
+  @@schema("public")
+}
+
+enum Area {
+  ADMINISTRACION
+  TECNOLOGIA
+  RECURSOS_HUMANOS
+  GESTION
+  BIOLOGIA
+  QUIMICA
+
+  @@schema("public")
+}
+
+model User {
+  userId    String   @id @map("user_id") @db.Uuid
+  name      String?
+  area      Area
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId])
+  @@index([name])
+  @@map("users")
+  @@schema("public")
+}
+
+enum TravelingExpenseStatus {
+  PENDING
+  APPROVED_BY_MANAGER
+  APPROVED_BY_ADMIN
+  CORRECTION_REQUESTED
+  REJECTED
+
+  @@schema("public")
+}
+
+model TravelingExpense {
+  id               String                 @id @db.Uuid
+  userId           String                 @map("user_id") @db.Uuid
+  project          String?
+  totalAmount      Decimal                @default(0) @map("total_amount") @db.Decimal(10, 2)
+  description      String?
+  approvedBy       String?                @map("approved_by") @db.Uuid
+  approvedByAdmin  Boolean                @default(false) @map("approved_by_admin")
+  isInternational  Boolean                @default(false) @map("is_international")
+  status           TravelingExpenseStatus @default(PENDING)
+  correctionReason String?                @map("correction_reason")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  expenseItems ExpenseItem[]
+
+  @@index([userId])
+  @@map("traveling_expenses")
+  @@schema("public")
+}
+
+enum ExpenseCategory {
+  TRANSPORTE
+  DIETAS
+  COMISIONES
+  COMBUSTIBLE
+
+  @@schema("public")
+}
+
+model ExpenseItem {
+  id                 String           @id @db.Uuid
+  travelingExpenseId String           @map("traveling_expense_id") @db.Uuid
+  date               DateTime         @db.Date
+  category           ExpenseCategory
+  amount             Decimal          @db.Decimal(10, 2)
+  startingLocation   String?          @map("starting_location")
+  destination        String?          @map("destination")
+  description        String?
+  ticket             String?          @map("string")
+  createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  travelingExpense   TravelingExpense @relation(fields: [travelingExpenseId], references: [id])
+
+  @@index([travelingExpenseId])
+  @@map("expense_items")
+  @@schema("public")
 }
