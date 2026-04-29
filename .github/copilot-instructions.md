@@ -17,6 +17,9 @@
 - Must handle loading states and error states gracefully, providing feedback to the user.
 - Avoid duplicating code by creating reusable components and hooks for common functionality.
 
+# Middleware
+
+In Next.js v16 or higher Middleware is NOT used. The new convention is using proxy.ts
 
 # Linting and formatting
 
