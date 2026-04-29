@@ -15,6 +15,7 @@ export interface ExpenseItem {
   destination: string
   description: string
   ticketFile: File | null
+  existingTicketUrl?: string
 }
 
 export function createEmptyItem(): ExpenseItem {
@@ -70,7 +71,7 @@ export function ExpenseItemRow({ item, index, onUpdate, onRemove, canRemove }: E
           <Label>
             Categoría <span className="text-destructive">*</span>
           </Label>
-          <Select value={item.category} onValueChange={(value) => onUpdate({ category: value })}>
+          <Select value={item.category || undefined} onValueChange={(value) => onUpdate({ category: value })}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Selecciona categoría" />
             </SelectTrigger>
@@ -124,7 +125,11 @@ export function ExpenseItemRow({ item, index, onUpdate, onRemove, canRemove }: E
         <div className="flex items-center gap-3">
           <label className="flex cursor-pointer items-center gap-2 rounded-md border border-input px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground">
             <Upload className="size-4" />
-            {item.ticketFile ? item.ticketFile.name : 'Subir imagen'}
+            {item.ticketFile
+              ? item.ticketFile.name
+              : item.existingTicketUrl
+                ? 'Reemplazar ticket'
+                : 'Subir imagen'}
             <input
               type="file"
               accept="image/*"
@@ -136,6 +141,16 @@ export function ExpenseItemRow({ item, index, onUpdate, onRemove, canRemove }: E
             <Button type="button" variant="ghost" size="sm" onClick={() => onUpdate({ ticketFile: null })}>
               Quitar
             </Button>
+          )}
+          {!item.ticketFile && item.existingTicketUrl && (
+            <a
+              href={item.existingTicketUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-muted-foreground underline underline-offset-2"
+            >
+              Ver ticket actual
+            </a>
           )}
         </div>
       </div>

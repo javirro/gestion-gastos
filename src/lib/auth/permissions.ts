@@ -1,4 +1,7 @@
-import type { AppRole } from "./roles";
+import type { AppRole } from './roles'
+
+export const ADMIN_ROLES: AppRole[] = ['ADMINISTRACION', 'DIRECTIVOS']
+export const REVIEW_ROLES: AppRole[] = ['ADMINISTRACION', 'DIRECTIVOS', 'RESPONSABLES']
 
 /**
  * Map of route patterns to allowed roles.

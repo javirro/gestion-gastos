@@ -1,6 +1,5 @@
-import { PrismaClient, ExpenseCategory, Area, TravelingExpenseStatus } from '@/generated/prisma/client'
-
-const prisma = new PrismaClient()
+import { ExpenseCategory, Area, TravelingExpenseStatus } from '@/generated/prisma/client'
+import { prisma } from '@/lib/prisma'
 
 export interface CreateExpenseData {
   id: string
@@ -119,4 +118,52 @@ export async function updateExpenseStatus(
   }
 ) {
   return prisma.travelingExpense.update({ where: { id }, data })
+}
+
+export interface UpdateExpenseData {
+  project?: string
+  description?: string
+  isInternational: boolean
+  totalAmount: number
+  items: {
+    id: string
+    date: Date
+    category: ExpenseCategory
+    amount: number
+    startingLocation?: string
+    destination?: string
+    description?: string
+    ticket?: string
+  }[]
+}
+
+export async function updateTravelingExpense(id: string, data: UpdateExpenseData) {
+  return prisma.$transaction(async (tx) => {
+    await tx.expenseItem.deleteMany({ where: { travelingExpenseId: id } })
+    return tx.travelingExpense.update({
+      where: { id },
+      data: {
+        project: data.project ?? null,
+        description: data.description ?? null,
+        isInternational: data.isInternational,
+        totalAmount: data.totalAmount,
+        status: 'PENDING',
+        correctionReason: null,
+        approvedBy: null,
+        expenseItems: {
+          create: data.items.map((item) => ({
+            id: item.id,
+            date: item.date,
+            category: item.category,
+            amount: item.amount,
+            startingLocation: item.startingLocation ?? null,
+            destination: item.destination ?? null,
+            description: item.description ?? null,
+            ticket: item.ticket ?? null,
+          })),
+        },
+      },
+      include: { expenseItems: true },
+    })
+  })
 }

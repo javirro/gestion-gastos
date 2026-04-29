@@ -3,6 +3,8 @@ import {
   createTravelingExpense,
   listByUserId,
   countByUserId,
+  getExpenseById,
+  updateTravelingExpense,
 } from './traveling-expenses.repository'
 import type { ExpenseCategory } from '@/generated/prisma/client'
 
@@ -173,4 +175,82 @@ export function mapToDto(expense: {
       createdAt: item.createdAt.toISOString(),
     })),
   }
+}
+
+export async function getOwnExpenseDetail(
+  expenseId: string,
+  userId: string
+): Promise<TravelingExpenseDto> {
+  const expense = await getExpenseById(expenseId)
+  if (!expense) throw new Error('Gasto no encontrado.')
+  if (expense.userId !== userId) throw new Error('No tienes acceso a este gasto.')
+  return mapToDto(expense)
+}
+
+const EDITABLE_STATUSES = ['PENDING', 'CORRECTION_REQUESTED']
+
+export interface EditExpenseItemInput {
+  date: string
+  category: string
+  amount: number
+  startingLocation?: string
+  destination?: string
+  description?: string
+  existingTicketUrl?: string
+}
+
+export interface EditExpenseInput {
+  project?: string
+  description?: string
+  isInternational: boolean
+  items: EditExpenseItemInput[]
+}
+
+export async function editExpense(
+  expenseId: string,
+  userId: string,
+  input: EditExpenseInput,
+  files: Map<number, File>
+): Promise<TravelingExpenseDto> {
+  const existing = await getExpenseById(expenseId)
+  if (!existing) throw new Error('Gasto no encontrado.')
+  if (existing.userId !== userId) throw new Error('No tienes acceso a este gasto.')
+  if (!EDITABLE_STATUSES.includes(existing.status)) {
+    throw new Error('Solo puedes editar gastos en estado pendiente o con corrección solicitada.')
+  }
+
+  const totalAmount = input.items.reduce((sum, item) => sum + item.amount, 0)
+
+  const items = await Promise.all(
+    input.items.map(async (item, index) => {
+      const itemId = crypto.randomUUID()
+      let ticketUrl: string | undefined = item.existingTicketUrl
+      const file = files.get(index)
+      if (file) {
+        const ext = file.name.split('.').pop() ?? 'jpg'
+        const path = `${userId}/${expenseId}/${itemId}.${ext}`
+        const result = await uploadFile({ bucket: BUCKET, path, file, contentType: file.type, upsert: true })
+        ticketUrl = result.publicUrl
+      }
+      return {
+        id: itemId,
+        date: new Date(item.date),
+        category: item.category as ExpenseCategory,
+        amount: item.amount,
+        startingLocation: item.startingLocation,
+        destination: item.destination,
+        description: item.description,
+        ticket: ticketUrl,
+      }
+    })
+  )
+
+  const updated = await updateTravelingExpense(expenseId, {
+    project: input.project,
+    description: input.description,
+    isInternational: input.isInternational,
+    totalAmount,
+    items,
+  })
+  return mapToDto(updated)
 }

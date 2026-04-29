@@ -26,7 +26,7 @@ const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'dest
   PENDING: 'outline',
   APPROVED_BY_MANAGER: 'secondary',
   APPROVED_BY_ADMIN: 'default',
-  CORRECTION_REQUESTED: 'secondary',
+  CORRECTION_REQUESTED: 'destructive',
   REJECTED: 'destructive',
 }
 
@@ -60,10 +60,12 @@ export function ExpenseDetailHeader({
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div>
-          <CardTitle className="text-lg">
-            {userName ?? 'Usuario desconocido'}
-          </CardTitle>
-          <p className="mt-0.5 text-sm text-muted-foreground">{userArea}</p>
+          {userName !== null && (
+            <>
+              <CardTitle className="text-lg">{userName ?? 'Usuario desconocido'}</CardTitle>
+              {userArea && <p className="mt-0.5 text-sm text-muted-foreground">{userArea}</p>}
+            </>
+          )}
         </div>
         <Badge variant={STATUS_VARIANT[status] ?? 'outline'}>
           {STATUS_LABEL[status] ?? status}
@@ -96,7 +98,7 @@ export function ExpenseDetailHeader({
           {correctionReason && (
             <div className="sm:col-span-2">
               <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Motivo de corrección</dt>
-              <dd className="mt-0.5 rounded-md border border-amber-200 bg-amber-50 p-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+              <dd className="mt-0.5 rounded-md border border-destructive/30 bg-destructive/10 p-2 text-sm text-destructive">
                 {correctionReason}
               </dd>
             </div>

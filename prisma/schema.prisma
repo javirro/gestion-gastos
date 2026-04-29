@@ -110,7 +110,7 @@ model ExpenseItem {
   startingLocation   String?          @map("starting_location")
   destination        String?          @map("destination")
   description        String?
-  ticket             String?          @map("string")
+  ticket             String?          @map("ticket")
   createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz
   travelingExpense   TravelingExpense @relation(fields: [travelingExpenseId], references: [id])
 

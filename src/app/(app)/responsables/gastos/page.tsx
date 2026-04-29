@@ -2,8 +2,7 @@ import { getAuthUser } from '@/lib/auth/get-user'
 import { redirect } from 'next/navigation'
 import { listExpensesForReview, PAGE_SIZE } from '@/server/traveling-expenses/traveling-expenses-review.service'
 import { ReviewExpensesTable } from './review-expenses-table'
-
-const ALLOWED_ROLES = ['ADMINISTRACION', 'DIRECTIVOS', 'RESPONSABLES']
+import { REVIEW_ROLES } from '@/lib/auth/permissions'
 
 interface Props {
   searchParams: Promise<{ page?: string }>
@@ -11,7 +10,7 @@ interface Props {
 
 export default async function RevisionGastosPage({ searchParams }: Props) {
   const user = await getAuthUser()
-  if (!user || !user.role || !ALLOWED_ROLES.includes(user.role)) {
+  if (!user || !user.role || !REVIEW_ROLES.includes(user.role)) {
     redirect('/unauthorized')
   }
 

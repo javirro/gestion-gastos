@@ -1,10 +1,8 @@
-import Link from "next/link"
-import { Users, Receipt, ClipboardCheck } from "lucide-react"
-import { getAuthUser } from "@/lib/auth/get-user"
-import { LogoutButton } from "@/components/logout-button"
-
-const ADMIN_ROLES = ["ADMINISTRACION", "DIRECTIVOS"]
-const REVIEW_ROLES = ["ADMINISTRACION", "DIRECTIVOS", "RESPONSABLES"]
+import Link from 'next/link'
+import { Users, Receipt, ClipboardCheck } from 'lucide-react'
+import { getAuthUser } from '@/lib/auth/get-user'
+import { LogoutButton } from '@/components/logout-button'
+import { ADMIN_ROLES, REVIEW_ROLES } from '@/lib/auth/permissions'
 
 export async function Navbar() {
   const user = await getAuthUser();
