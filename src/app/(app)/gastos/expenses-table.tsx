@@ -13,8 +13,20 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileDown } from 'lucide-react'
 import { STATUS_LABEL, STATUS_VARIANT, formatExpenseDate, formatCurrency } from '@/lib/expense-status'
+import { cn } from '@/lib/utils'
+import { exportExpenseToPdf } from '@/lib/export-expense-pdf'
+
+interface ExpenseItem {
+  id: string
+  date: string
+  category: string
+  amount: number
+  startingLocation: string | null
+  destination: string | null
+  description: string | null
+}
 
 interface Expense {
   id: string
@@ -24,7 +36,7 @@ interface Expense {
   isInternational: boolean
   status: string
   createdAt: string
-  expenseItems: { id: string }[]
+  expenseItems: ExpenseItem[]
 }
 
 interface ExpensesTableProps {
@@ -49,12 +61,13 @@ export function ExpensesTable({ expenses, page, totalPages }: ExpensesTableProps
               <TableHead>Nº gastos</TableHead>
               <TableHead>Internacional</TableHead>
               <TableHead>Estado</TableHead>
+              <TableHead className='w-10' />
             </TableRow>
           </TableHeader>
           <TableBody>
             {expenses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={7} className='text-center text-muted-foreground'>
                   No se encontraron gastos.
                 </TableCell>
               </TableRow>
@@ -78,6 +91,15 @@ export function ExpensesTable({ expenses, page, totalPages }: ExpensesTableProps
                     <Badge variant={STATUS_VARIANT[expense.status] ?? 'outline'}>
                       {STATUS_LABEL[expense.status] ?? expense.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <button
+                      className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'size-8')}
+                      onClick={(e) => { e.stopPropagation(); exportExpenseToPdf(expense) }}
+                      title='Exportar PDF'
+                    >
+                      <FileDown className='size-4' />
+                    </button>
                   </TableCell>
                 </TableRow>
               ))
