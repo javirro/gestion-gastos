@@ -37,12 +37,12 @@ export function ReviewExpensesTable({ expenses, page, totalPages }: ReviewExpens
 
   return (
     <div className={`space-y-4 transition-opacity duration-200${isPending ? ' pointer-events-none opacity-60' : ''}`}>
-      <div className="rounded-lg border">
+      <div className='overflow-x-auto rounded-lg border'>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Usuario</TableHead>
-              <TableHead>Área</TableHead>
+              <TableHead className='hidden sm:table-cell'>Área</TableHead>
               <TableHead>Fecha</TableHead>
               <TableHead>Proyecto</TableHead>
               <TableHead>Importe</TableHead>
@@ -65,7 +65,7 @@ export function ReviewExpensesTable({ expenses, page, totalPages }: ReviewExpens
                   onClick={() => router.push(`/responsables/gastos/${expense.id}`)}
                 >
                   <TableCell className="font-medium">{expense.userName ?? '—'}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{expense.userArea}</TableCell>
+                  <TableCell className='hidden sm:table-cell text-sm text-muted-foreground'>{expense.userArea}</TableCell>
                   <TableCell>{formatExpenseDate(expense.createdAt)}</TableCell>
                   <TableCell>{expense.project ?? <span className="text-muted-foreground">—</span>}</TableCell>
                   <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>

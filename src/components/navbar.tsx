@@ -12,40 +12,40 @@ export async function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-        <div className="flex items-center gap-6">
+        <div className='flex min-w-0 items-center gap-2 sm:gap-6'>
           <Link
-            href="/"
-            className="text-sm font-semibold tracking-tight text-primary"
+            href='/'
+            className='shrink-0 text-sm font-semibold tracking-tight text-primary'
           >
             Gestión de Gastos
           </Link>
 
-          <nav className="flex items-center gap-4">
+          <nav className='flex items-center gap-1 sm:gap-4'>
             {user && (
               <Link
-                href="/gastos"
-                className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                href='/gastos'
+                className='flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground'
               >
-                <Receipt className="size-4" />
-                Gastos
+                <Receipt className='size-4' />
+                <span className='hidden sm:inline'>Gastos</span>
               </Link>
             )}
             {canSeeReview && (
               <Link
-                href="/responsables/gastos"
-                className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                href='/responsables/gastos'
+                className='flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground'
               >
-                <ClipboardCheck className="size-4" />
-                Revisión
+                <ClipboardCheck className='size-4' />
+                <span className='hidden sm:inline'>Revisión</span>
               </Link>
             )}
             {canSeeUsers && (
               <Link
-                href="/admin/usuarios"
-                className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                href='/admin/usuarios'
+                className='flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground'
               >
-                <Users className="size-4" />
-                Usuarios
+                <Users className='size-4' />
+                <span className='hidden sm:inline'>Usuarios</span>
               </Link>
             )}
           </nav>

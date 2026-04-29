@@ -39,7 +39,7 @@ export function ExpensesTable({ expenses, page, totalPages }: ExpensesTableProps
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border">
+      <div className='overflow-x-auto rounded-lg border'>
         <Table>
           <TableHeader>
             <TableRow>

@@ -59,14 +59,14 @@ export function UsersTable({ users, page, hasNextPage }: UsersTableProps) {
 
   return (
     <div className={`space-y-4 transition-opacity duration-200${isPending ? ' pointer-events-none opacity-60' : ''}`}>
-      <div className='rounded-lg border'>
+      <div className='overflow-x-auto rounded-lg border'>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Email</TableHead>
               <TableHead>Rol</TableHead>
-              <TableHead>Creado</TableHead>
-              <TableHead>Último acceso</TableHead>
+              <TableHead className='hidden md:table-cell'>Creado</TableHead>
+              <TableHead className='hidden md:table-cell'>Último acceso</TableHead>
               <TableHead className='w-16'>Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -90,8 +90,8 @@ export function UsersTable({ users, page, hasNextPage }: UsersTableProps) {
                       <span className='text-sm text-muted-foreground'>Sin rol</span>
                     )}
                   </TableCell>
-                  <TableCell>{formatDate(user.createdAt)}</TableCell>
-                  <TableCell>{formatDate(user.lastSignIn)}</TableCell>
+                  <TableCell className='hidden md:table-cell'>{formatDate(user.createdAt)}</TableCell>
+                  <TableCell className='hidden md:table-cell'>{formatDate(user.lastSignIn)}</TableCell>
                   <TableCell>
                     <EditUserDialog user={user} onSuccess={handleRefresh} />
                   </TableCell>

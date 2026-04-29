@@ -78,7 +78,7 @@ export function ApproveActions({ expenseId, status, onSuccess }: ApproveActionsP
 
   return (
     <>
-      <div className="flex items-center gap-1">
+      <div className='flex flex-wrap items-center gap-1'>
         <Button size="sm" variant="outline" onClick={() => setAction('APPROVE')} className="h-7 text-xs">
           <Check className="mr-1 size-3" /> Aprobar
         </Button>

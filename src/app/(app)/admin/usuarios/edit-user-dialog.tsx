@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import { Pencil } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { APP_ROLES } from '@/lib/auth/roles'
+import { cn } from '@/lib/utils'
 
 const AREAS = [
   { value: 'ADMINISTRACION', label: 'Administración' },
@@ -77,11 +78,9 @@ export function EditUserDialog({ user, onSuccess }: EditUserDialogProps) {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant='ghost' size='icon' className='size-8'>
-          <Pencil className='size-3.5' />
-          <span className='sr-only'>Editar usuario</span>
-        </Button>
+      <SheetTrigger className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'size-8')}>
+        <Pencil className='size-3.5' />
+        <span className='sr-only'>Editar usuario</span>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
@@ -95,7 +94,7 @@ export function EditUserDialog({ user, onSuccess }: EditUserDialogProps) {
           </div>
           <div className='space-y-1.5'>
             <Label htmlFor='edit-role'>Rol</Label>
-            <Select value={role} onValueChange={setRole} required>
+            <Select value={role} onValueChange={(v) => { if (v !== null) setRole(v) }} required>
               <SelectTrigger id='edit-role'>
                 <SelectValue placeholder='Selecciona un rol' />
               </SelectTrigger>
@@ -108,7 +107,7 @@ export function EditUserDialog({ user, onSuccess }: EditUserDialogProps) {
           </div>
           <div className='space-y-1.5'>
             <Label htmlFor='edit-area'>Área</Label>
-            <Select value={area} onValueChange={setArea} required>
+            <Select value={area} onValueChange={(v) => { if (v !== null) setArea(v) }} required>
               <SelectTrigger id='edit-area'>
                 <SelectValue placeholder='Selecciona un área' />
               </SelectTrigger>

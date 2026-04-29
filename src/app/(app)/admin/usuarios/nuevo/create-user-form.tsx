@@ -111,7 +111,7 @@ export function CreateUserForm() {
             <Label>
               Rol <span className="text-destructive">*</span>
             </Label>
-            <Select value={role} onValueChange={setRole}>
+            <Select value={role} onValueChange={(v) => { if (v !== null) setRole(v) }}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Selecciona un rol" />
               </SelectTrigger>
@@ -129,7 +129,7 @@ export function CreateUserForm() {
             <Label>
               Área <span className="text-destructive">*</span>
             </Label>
-            <Select value={area} onValueChange={setArea}>
+            <Select value={area} onValueChange={(v) => { if (v !== null) setArea(v) }}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Selecciona un área" />
               </SelectTrigger>

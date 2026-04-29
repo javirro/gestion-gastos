@@ -71,7 +71,7 @@ export function ExpenseItemRow({ item, index, onUpdate, onRemove, canRemove }: E
           <Label>
             Categoría <span className="text-destructive">*</span>
           </Label>
-          <Select value={item.category || undefined} onValueChange={(value) => onUpdate({ category: value })}>
+          <Select value={item.category || undefined} onValueChange={(value) => { if (value !== null) onUpdate({ category: value }) }}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Selecciona categoría" />
             </SelectTrigger>
