@@ -1,11 +1,16 @@
 import { getAuthUser } from '@/lib/auth/get-user'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { listExpensesForReview, PAGE_SIZE } from '@/server/traveling-expenses/traveling-expenses-review.service'
 import { ReviewExpensesTable } from './review-expenses-table'
+import { ReviewFilters } from './review-filters'
 import { REVIEW_ROLES } from '@/lib/auth/permissions'
+import { VALID_AREAS } from '@/lib/auth/areas'
+
+const VALID_STATUSES = ['PENDING', 'APPROVED_BY_MANAGER', 'APPROVED_BY_ADMIN', 'CORRECTION_REQUESTED', 'REJECTED']
 
 interface Props {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; area?: string; status?: string; period?: string }>
 }
 
 export default async function RevisionGastosPage({ searchParams }: Props) {
@@ -17,9 +22,17 @@ export default async function RevisionGastosPage({ searchParams }: Props) {
   const params = await searchParams
   const page = Math.max(1, parseInt(params.page ?? '1', 10))
 
+  const status = VALID_STATUSES.includes(params.status ?? '') ? (params.status ?? '') : ''
+  const period = /^\d{4}-\d{2}$/.test(params.period ?? '') ? (params.period ?? '') : ''
+  const area = VALID_AREAS.includes(params.area as never) ? (params.area ?? '') : ''
+
   let result
   try {
-    result = await listExpensesForReview(user.role, user.id, page, PAGE_SIZE)
+    result = await listExpensesForReview(user.role, user.id, page, PAGE_SIZE, {
+      status: status || undefined,
+      period: period || undefined,
+      area: area || undefined,
+    })
   } catch (err) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-8">
@@ -43,7 +56,24 @@ export default async function RevisionGastosPage({ searchParams }: Props) {
             : 'Todos los gastos de desplazamiento.'}
         </p>
       </div>
-      <ReviewExpensesTable expenses={expenses} page={page} totalPages={totalPages} />
+      <div className="mb-4">
+        <Suspense>
+          <ReviewFilters
+            status={status}
+            period={period}
+            area={area}
+            showAreaFilter={user.role !== 'RESPONSABLES'}
+          />
+        </Suspense>
+      </div>
+      <ReviewExpensesTable
+        expenses={expenses}
+        page={page}
+        totalPages={totalPages}
+        status={status || undefined}
+        period={period || undefined}
+        area={area || undefined}
+      />
     </div>
   )
 }

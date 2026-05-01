@@ -5,8 +5,9 @@ import {
   countByUserId,
   getExpenseById,
   updateTravelingExpense,
+  createExpenseComment,
 } from './traveling-expenses.repository'
-import type { ExpenseCategory } from '@/generated/prisma/client'
+import type { ExpenseCategory } from '@/generated/prisma'
 
 const BUCKET = 'tickets'
 export const PAGE_SIZE = 10
@@ -15,15 +16,17 @@ export interface ExpenseItemInput {
   date: string
   category: ExpenseCategory
   amount: number
+  isInternational: boolean
   startingLocation?: string
   destination?: string
+  distance?: number
   description?: string
 }
 
 export interface CreateExpenseInput {
   project?: string
+  period?: string
   description?: string
-  isInternational: boolean
   items: ExpenseItemInput[]
 }
 
@@ -32,10 +35,20 @@ export interface ExpenseItemDto {
   date: string
   category: string
   amount: number
+  isInternational: boolean
   startingLocation: string | null
   destination: string | null
+  distance: number | null
   description: string | null
   ticket: string | null
+  createdAt: string
+}
+
+export interface ExpenseCommentDto {
+  id: string
+  userId: string
+  userName: string | null
+  message: string
   createdAt: string
 }
 
@@ -43,13 +56,14 @@ export interface TravelingExpenseDto {
   id: string
   userId: string
   project: string | null
+  period: string | null
   totalAmount: number
   description: string | null
-  isInternational: boolean
   status: string
   correctionReason: string | null
   createdAt: string
   expenseItems: ExpenseItemDto[]
+  comments: ExpenseCommentDto[]
 }
 
 export interface ListExpensesResult {
@@ -92,8 +106,10 @@ export async function createExpense(
         date: new Date(item.date),
         category: item.category,
         amount: item.amount,
+        isInternational: item.isInternational,
         startingLocation: item.startingLocation,
         destination: item.destination,
+        distance: item.distance,
         description: item.description,
         ticket: ticketUrl,
       }
@@ -104,8 +120,8 @@ export async function createExpense(
     id: expenseId,
     userId,
     project: input.project,
+    period: input.period,
     description: input.description,
-    isInternational: input.isInternational,
     totalAmount,
     items: itemsWithTickets,
   })
@@ -116,11 +132,12 @@ export async function createExpense(
 export async function listUserExpenses(
   userId: string,
   page: number,
-  perPage: number
+  perPage: number,
+  filters?: { status?: string; period?: string }
 ): Promise<ListExpensesResult> {
   const [expenses, total] = await Promise.all([
-    listByUserId(userId, page, perPage),
-    countByUserId(userId),
+    listByUserId(userId, page, perPage, filters),
+    countByUserId(userId, filters),
   ])
 
   return {
@@ -135,9 +152,9 @@ export function mapToDto(expense: {
   id: string
   userId: string
   project: string | null
+  period: string | null
   totalAmount: unknown
   description: string | null
-  isInternational: boolean
   status: string
   correctionReason: string | null
   createdAt: Date
@@ -146,10 +163,19 @@ export function mapToDto(expense: {
     date: Date
     category: string
     amount: unknown
+    isInternational: boolean
     startingLocation: string | null
     destination: string | null
+    distance: unknown
     description: string | null
     ticket: string | null
+    createdAt: Date
+  }[]
+  comments: {
+    id: string
+    userId: string
+    userName: string | null
+    message: string
     createdAt: Date
   }[]
 }): TravelingExpenseDto {
@@ -157,9 +183,9 @@ export function mapToDto(expense: {
     id: expense.id,
     userId: expense.userId,
     project: expense.project,
+    period: expense.period,
     totalAmount: Number(expense.totalAmount),
     description: expense.description,
-    isInternational: expense.isInternational,
     status: expense.status,
     correctionReason: expense.correctionReason,
     createdAt: expense.createdAt.toISOString(),
@@ -168,11 +194,20 @@ export function mapToDto(expense: {
       date: item.date.toISOString(),
       category: item.category,
       amount: Number(item.amount),
+      isInternational: item.isInternational,
       startingLocation: item.startingLocation,
       destination: item.destination,
+      distance: item.distance != null ? Number(item.distance) : null,
       description: item.description,
       ticket: item.ticket,
       createdAt: item.createdAt.toISOString(),
+    })),
+    comments: expense.comments.map((c) => ({
+      id: c.id,
+      userId: c.userId,
+      userName: c.userName,
+      message: c.message,
+      createdAt: c.createdAt.toISOString(),
     })),
   }
 }
@@ -193,16 +228,18 @@ export interface EditExpenseItemInput {
   date: string
   category: string
   amount: number
+  isInternational: boolean
   startingLocation?: string
   destination?: string
+  distance?: number
   description?: string
   existingTicketUrl?: string
 }
 
 export interface EditExpenseInput {
   project?: string
+  period?: string
   description?: string
-  isInternational: boolean
   items: EditExpenseItemInput[]
 }
 
@@ -237,8 +274,10 @@ export async function editExpense(
         date: new Date(item.date),
         category: item.category as ExpenseCategory,
         amount: item.amount,
+        isInternational: item.isInternational,
         startingLocation: item.startingLocation,
         destination: item.destination,
+        distance: item.distance,
         description: item.description,
         ticket: ticketUrl,
       }
@@ -247,10 +286,36 @@ export async function editExpense(
 
   const updated = await updateTravelingExpense(expenseId, {
     project: input.project,
+    period: input.period,
     description: input.description,
-    isInternational: input.isInternational,
     totalAmount,
     items,
   })
   return mapToDto(updated)
+}
+
+export async function addComment(
+  expenseId: string,
+  userId: string,
+  userName: string | undefined,
+  message: string
+): Promise<ExpenseCommentDto> {
+  const expense = await getExpenseById(expenseId)
+  if (!expense) throw new Error('Gasto no encontrado.')
+
+  const comment = await createExpenseComment({
+    id: crypto.randomUUID(),
+    travelingExpenseId: expenseId,
+    userId,
+    userName,
+    message,
+  })
+
+  return {
+    id: comment.id,
+    userId: comment.userId,
+    userName: comment.userName,
+    message: comment.message,
+    createdAt: comment.createdAt.toISOString(),
+  }
 }

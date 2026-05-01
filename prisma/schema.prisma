@@ -75,17 +75,19 @@ model TravelingExpense {
   id               String                 @id @db.Uuid
   userId           String                 @map("user_id") @db.Uuid
   project          String?
+  period           String?                @map("period")
   totalAmount      Decimal                @default(0) @map("total_amount") @db.Decimal(10, 2)
   description      String?
   approvedBy       String?                @map("approved_by") @db.Uuid
   approvedByAdmin  Boolean                @default(false) @map("approved_by_admin")
-  isInternational  Boolean                @default(false) @map("is_international")
+
   status           TravelingExpenseStatus @default(PENDING)
   correctionReason String?                @map("correction_reason")
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   expenseItems ExpenseItem[]
+  comments     ExpenseComment[]
 
   @@index([userId])
   @@map("traveling_expenses")
@@ -109,12 +111,28 @@ model ExpenseItem {
   amount             Decimal          @db.Decimal(10, 2)
   startingLocation   String?          @map("starting_location")
   destination        String?          @map("destination")
+  distance           Decimal?         @map("distance") @db.Decimal(10, 2)
   description        String?
   ticket             String?          @map("ticket")
+  isInternational  Boolean                @default(false) @map("is_international")
   createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz
-  travelingExpense   TravelingExpense @relation(fields: [travelingExpenseId], references: [id])
+  travelingExpense   TravelingExpense @relation(fields: [travelingExpenseId], references: [id], onDelete: Cascade )
 
   @@index([travelingExpenseId])
   @@map("expense_items")
+  @@schema("public")
+}
+
+model ExpenseComment {
+  id                 String           @id @db.Uuid
+  travelingExpenseId String           @map("traveling_expense_id") @db.Uuid
+  userId             String           @map("user_id") @db.Uuid
+  userName           String?          @map("user_name")
+  message            String
+  createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  travelingExpense   TravelingExpense @relation(fields: [travelingExpenseId], references: [id], onDelete: Cascade )
+
+  @@index([travelingExpenseId])
+  @@map("expense_comments")
   @@schema("public")
 }

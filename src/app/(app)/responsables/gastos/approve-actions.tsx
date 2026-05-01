@@ -17,7 +17,7 @@ import { Check, MessageSquare, X } from 'lucide-react'
 
 type Action = 'APPROVE' | 'REQUEST_CORRECTION' | 'REJECT'
 
-const FINAL_STATUSES = ['APPROVED_BY_ADMIN', 'REJECTED']
+const FINAL_STATUSES = ['APPROVED_BY_MANAGER', 'REJECTED']
 
 const ACTION_TITLES: Record<Action, string> = {
   APPROVE: '¿Aprobar este gasto?',

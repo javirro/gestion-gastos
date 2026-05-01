@@ -11,8 +11,8 @@ export function CreateExpenseForm() {
   const router = useRouter()
 
   const [project, setProject] = useState('')
+  const [period, setPeriod] = useState('')
   const [description, setDescription] = useState('')
-  const [isInternational, setIsInternational] = useState(false)
   const [items, setItems] = useState<ExpenseItem[]>([createEmptyItem()])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -41,14 +41,16 @@ export function CreateExpenseForm() {
     try {
       const metadata = {
         project: project || undefined,
+        period: period || undefined,
         description: description || undefined,
-        isInternational,
         items: items.map((item) => ({
           date: item.date,
           category: item.category,
           amount: parseFloat(item.amount),
+          isInternational: item.isInternational,
           startingLocation: item.startingLocation || undefined,
           destination: item.destination || undefined,
+          distance: item.distance ? parseFloat(item.distance) : undefined,
           description: item.description || undefined,
         })),
       }
@@ -81,10 +83,10 @@ export function CreateExpenseForm() {
       <ExpenseHeaderCard
         project={project}
         onProjectChange={setProject}
+        period={period}
+        onPeriodChange={setPeriod}
         description={description}
         onDescriptionChange={setDescription}
-        isInternational={isInternational}
-        onIsInternationalChange={setIsInternational}
       />
       <ExpenseItemsCard
         items={items}

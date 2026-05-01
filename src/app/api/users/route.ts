@@ -16,9 +16,13 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
   const perPage = Math.min(50, Math.max(1, parseInt(searchParams.get('perPage') ?? String(PAGE_SIZE), 10)))
+  const area = searchParams.get('area') ?? undefined
+  const role = searchParams.get('role') ?? undefined
+
+  const filters = area || role ? { area, role } : undefined
 
   try {
-    const result = await listUsers(page, perPage)
+    const result = await listUsers(page, perPage, filters)
     return apiSuccess({ status: 200, message: 'Usuarios obtenidos correctamente.', data: result })
   } catch {
     return apiError({ status: 500, message: 'Error al obtener usuarios.' })

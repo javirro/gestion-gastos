@@ -11,8 +11,10 @@ interface InitialItem {
   date: string
   category: string
   amount: number
+  isInternational: boolean
   startingLocation: string | null
   destination: string | null
+  distance: number | null
   description: string | null
   ticket: string | null
 }
@@ -20,8 +22,8 @@ interface InitialItem {
 interface EditExpenseFormProps {
   expenseId: string
   initialProject: string
+  initialPeriod: string
   initialDescription: string
-  initialIsInternational: boolean
   initialItems: InitialItem[]
 }
 
@@ -31,8 +33,10 @@ function toFormItem(item: InitialItem): ExpenseItem {
     date: item.date.substring(0, 10),
     category: item.category,
     amount: String(item.amount),
+    isInternational: item.isInternational,
     startingLocation: item.startingLocation ?? '',
     destination: item.destination ?? '',
+    distance: item.distance != null ? String(item.distance) : '',
     description: item.description ?? '',
     ticketFile: null,
     existingTicketUrl: item.ticket ?? undefined,
@@ -42,15 +46,15 @@ function toFormItem(item: InitialItem): ExpenseItem {
 export function EditExpenseForm({
   expenseId,
   initialProject,
+  initialPeriod,
   initialDescription,
-  initialIsInternational,
   initialItems,
 }: EditExpenseFormProps) {
   const router = useRouter()
 
   const [project, setProject] = useState(initialProject)
+  const [period, setPeriod] = useState(initialPeriod)
   const [description, setDescription] = useState(initialDescription)
-  const [isInternational, setIsInternational] = useState(initialIsInternational)
   const [items, setItems] = useState<ExpenseItem[]>(initialItems.map(toFormItem))
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -75,14 +79,16 @@ export function EditExpenseForm({
     try {
       const metadata = {
         project: project || undefined,
+        period: period || undefined,
         description: description || undefined,
-        isInternational,
         items: items.map((item) => ({
           date: item.date,
           category: item.category,
           amount: parseFloat(item.amount),
+          isInternational: item.isInternational,
           startingLocation: item.startingLocation || undefined,
           destination: item.destination || undefined,
+          distance: item.distance ? parseFloat(item.distance) : undefined,
           description: item.description || undefined,
           existingTicketUrl: item.ticketFile ? undefined : item.existingTicketUrl,
         })),
@@ -116,10 +122,10 @@ export function EditExpenseForm({
       <ExpenseHeaderCard
         project={project}
         onProjectChange={setProject}
+        period={period}
+        onPeriodChange={setPeriod}
         description={description}
         onDescriptionChange={setDescription}
-        isInternational={isInternational}
-        onIsInternationalChange={setIsInternational}
       />
       <ExpenseItemsCard
         items={items}

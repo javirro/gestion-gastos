@@ -7,6 +7,7 @@ import { getExpenseDetail } from '@/server/traveling-expenses/traveling-expenses
 import { ExpenseDetailHeader } from './expense-detail-header'
 import { ExpenseItemsDetail } from './expense-items-detail'
 import { ApproveActions } from '../approve-actions'
+import { ExpenseComments } from '@/components/expense-comments'
 
 const ALLOWED_ROLES = ['ADMINISTRACION', 'DIRECTIVOS', 'RESPONSABLES']
 
@@ -53,15 +54,16 @@ export default async function ExpenseDetailPage({ params }: Props) {
           userName={expense.userName}
           userArea={expense.userArea}
           project={expense.project}
+          period={expense.period}
           description={expense.description}
           totalAmount={expense.totalAmount}
-          isInternational={expense.isInternational}
           status={expense.status}
           correctionReason={expense.correctionReason}
           approvedByAdmin={expense.approvedByAdmin}
           createdAt={expense.createdAt}
         />
         <ExpenseItemsDetail items={expense.expenseItems} />
+        <ExpenseComments expenseId={expense.id} comments={expense.comments} />
       </div>
     </div>
   )

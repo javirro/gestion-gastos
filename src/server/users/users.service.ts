@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { Role, Area } from '@/generated/prisma/client'
+import { Role, Area } from '@/generated/prisma'
 import {
   getRolesByUserIds,
   createUserRole,
@@ -7,6 +7,7 @@ import {
   getUserProfiles,
   updateUserProfile,
   replaceUserRole,
+  getUserIdsByFilters,
 } from './users.repository'
 import type { AppRole } from '@/lib/auth/roles'
 
@@ -26,6 +27,12 @@ export interface ListUsersResult {
   users: UserDto[]
   page: number
   perPage: number
+  total?: number
+}
+
+export interface ListUsersFilters {
+  area?: string
+  role?: string
 }
 
 export interface CreateUserInput {
@@ -36,8 +43,44 @@ export interface CreateUserInput {
   area: string
 }
 
-export async function listUsers(page: number, perPage: number): Promise<ListUsersResult> {
+export async function listUsers(page: number, perPage: number, filters?: ListUsersFilters): Promise<ListUsersResult> {
   const supabase = createAdminClient()
+
+  const hasFilters = !!(filters?.area || filters?.role)
+
+  if (hasFilters) {
+    const filteredIds = await getUserIdsByFilters(filters!)
+    const total = filteredIds.length
+    const pageIds = filteredIds.slice((page - 1) * perPage, page * perPage)
+
+    const [userResults, rolesData, profilesData] = await Promise.all([
+      Promise.all(pageIds.map((id) => supabase.auth.admin.getUserById(id))),
+      getRolesByUserIds(pageIds),
+      getUserProfiles(pageIds),
+    ])
+
+    const supabaseUsers = userResults
+      .filter((r) => !r.error && r.data.user)
+      .map((r) => r.data.user!)
+
+    const roleMap = new Map(rolesData.map((r) => [r.userId, r.role as string]))
+    const profileMap = new Map(profilesData.map((p) => [p.userId, p]))
+
+    return {
+      users: supabaseUsers.map((u) => ({
+        id: u.id,
+        email: u.email ?? '',
+        name: profileMap.get(u.id)?.name ?? null,
+        role: roleMap.get(u.id) ?? null,
+        area: profileMap.get(u.id)?.area ?? null,
+        createdAt: u.created_at,
+        lastSignIn: u.last_sign_in_at ?? null,
+      })),
+      page,
+      perPage,
+      total,
+    }
+  }
 
   const {
     data: { users },
@@ -61,10 +104,10 @@ export async function listUsers(page: number, perPage: number): Promise<ListUser
       role: roleMap.get(u.id) ?? null,
       area: profileMap.get(u.id)?.area ?? null,
       createdAt: u.created_at,
-      lastSignIn: u.last_sign_in_at ?? null
+      lastSignIn: u.last_sign_in_at ?? null,
     })),
     page,
-    perPage
+    perPage,
   }
 }
 

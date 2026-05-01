@@ -6,6 +6,7 @@ import { ChevronLeft, Pencil } from 'lucide-react'
 import { getOwnExpenseDetail } from '@/server/traveling-expenses/traveling-expenses.service'
 import { ExpenseDetailHeader } from '../../responsables/gastos/[id]/expense-detail-header'
 import { ExpenseItemsDetail } from '../../responsables/gastos/[id]/expense-items-detail'
+import { ExpenseComments } from '@/components/expense-comments'
 
 const EDITABLE_STATUSES = ['PENDING', 'CORRECTION_REQUESTED']
 
@@ -60,15 +61,16 @@ export default async function UserExpenseDetailPage({ params }: Props) {
           userName={null}
           userArea=""
           project={expense.project}
+          period={expense.period}
           description={expense.description}
           totalAmount={expense.totalAmount}
-          isInternational={expense.isInternational}
           status={expense.status}
           correctionReason={expense.correctionReason}
           approvedByAdmin={false}
           createdAt={expense.createdAt}
         />
         <ExpenseItemsDetail items={expense.expenseItems} />
+        <ExpenseComments expenseId={expense.id} comments={expense.comments} />
       </div>
     </div>
   )

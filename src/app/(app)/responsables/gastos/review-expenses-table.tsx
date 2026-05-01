@@ -25,14 +25,26 @@ interface ReviewExpensesTableProps {
   expenses: ReviewExpense[]
   page: number
   totalPages: number
+  status?: string
+  period?: string
+  area?: string
 }
 
-export function ReviewExpensesTable({ expenses, page, totalPages }: ReviewExpensesTableProps) {
+export function ReviewExpensesTable({ expenses, page, totalPages, status, period, area }: ReviewExpensesTableProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
   function handleRefresh() {
     startTransition(() => router.refresh())
+  }
+
+  function buildUrl(p: number) {
+    const params = new URLSearchParams()
+    params.set('page', String(p))
+    if (status) params.set('status', status)
+    if (period) params.set('period', period)
+    if (area) params.set('area', area)
+    return `/responsables/gastos?${params.toString()}`
   }
 
   return (
@@ -92,7 +104,7 @@ export function ReviewExpensesTable({ expenses, page, totalPages }: ReviewExpens
         <p className="text-sm text-muted-foreground">Página {page} de {Math.max(1, totalPages)}</p>
         <div className="flex gap-2">
           {page > 1 ? (
-            <Link href={`/responsables/gastos?page=${page - 1}`} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+            <Link href={buildUrl(page - 1)} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
               <ChevronLeft className="mr-1 size-4" /> Anterior
             </Link>
           ) : (
@@ -101,7 +113,7 @@ export function ReviewExpensesTable({ expenses, page, totalPages }: ReviewExpens
             </span>
           )}
           {page < totalPages ? (
-            <Link href={`/responsables/gastos?page=${page + 1}`} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+            <Link href={buildUrl(page + 1)} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
               Siguiente <ChevronRight className="ml-1 size-4" />
             </Link>
           ) : (

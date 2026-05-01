@@ -8,6 +8,7 @@ interface ExpenseItem {
   date: string
   category: string
   amount: number
+  isInternational: boolean
   startingLocation: string | null
   destination: string | null
   description: string | null
@@ -50,8 +51,7 @@ export function ExpenseItemsDetail({ items }: ExpenseItemsDetailProps) {
               <TableHead>Fecha</TableHead>
               <TableHead>Categoría</TableHead>
               <TableHead>Importe</TableHead>
-              <TableHead>Origen</TableHead>
-              <TableHead>Destino</TableHead>
+              <TableHead>Internacional</TableHead>
               <TableHead>Descripción</TableHead>
               <TableHead>Ticket</TableHead>
             </TableRow>
@@ -64,11 +64,8 @@ export function ExpenseItemsDetail({ items }: ExpenseItemsDetailProps) {
                   <Badge variant="outline">{CATEGORY_LABEL[item.category] ?? item.category}</Badge>
                 </TableCell>
                 <TableCell className="font-medium">{formatCurrency(item.amount)}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {item.startingLocation ?? '—'}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {item.destination ?? '—'}
+                <TableCell className="text-sm">
+                  {item.isInternational ? 'Sí' : 'No'}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {item.description ?? '—'}

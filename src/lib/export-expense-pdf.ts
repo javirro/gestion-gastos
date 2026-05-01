@@ -23,7 +23,6 @@ export interface ExpenseForPdf {
   project: string | null
   totalAmount: number
   description: string | null
-  isInternational: boolean
   status: string
   createdAt: string
   expenseItems: ExpenseItemForPdf[]
@@ -61,7 +60,6 @@ export function exportExpenseToPdf(expense: ExpenseForPdf) {
       ['Fecha', formatExpenseDate(expense.createdAt)],
       ['Proyecto', expense.project ?? '—'],
       ['Estado', STATUS_LABEL[expense.status] ?? expense.status],
-      ['Internacional', expense.isInternational ? 'Sí' : 'No'],
       ['Descripción', expense.description ?? '—'],
     ],
     theme: 'plain',

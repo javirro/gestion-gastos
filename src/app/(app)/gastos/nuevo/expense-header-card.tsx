@@ -4,24 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
 
 interface ExpenseHeaderCardProps {
   project: string
   onProjectChange: (value: string) => void
+  period: string
+  onPeriodChange: (value: string) => void
   description: string
   onDescriptionChange: (value: string) => void
-  isInternational: boolean
-  onIsInternationalChange: (value: boolean) => void
 }
 
 export function ExpenseHeaderCard({
   project,
   onProjectChange,
+  period,
+  onPeriodChange,
   description,
   onDescriptionChange,
-  isInternational,
-  onIsInternationalChange,
 }: ExpenseHeaderCardProps) {
   return (
     <Card>
@@ -40,6 +39,16 @@ export function ExpenseHeaderCard({
         </div>
 
         <div className="space-y-1.5">
+          <Label htmlFor="period">Periodo</Label>
+          <Input
+            id="period"
+            type="month"
+            value={period}
+            onChange={(e) => onPeriodChange(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-1.5">
           <Label htmlFor="description">Descripción</Label>
           <Textarea
             id="description"
@@ -48,15 +57,6 @@ export function ExpenseHeaderCard({
             onChange={(e) => onDescriptionChange(e.target.value)}
             rows={3}
           />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Switch
-            id="international"
-            checked={isInternational}
-            onCheckedChange={onIsInternationalChange}
-          />
-          <Label htmlFor="international">Gasto internacional</Label>
         </div>
       </CardContent>
     </Card>

@@ -1,15 +1,15 @@
 export const STATUS_LABEL: Record<string, string> = {
   PENDING: 'Pendiente',
-  APPROVED_BY_MANAGER: 'Aprobado (resp.)',
-  APPROVED_BY_ADMIN: 'Aprobado',
+  APPROVED_BY_ADMIN: 'Aprobado (admin)',
+  APPROVED_BY_MANAGER: 'Aprobado',
   CORRECTION_REQUESTED: 'Corrección',
   REJECTED: 'Rechazado',
 }
 
 export const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   PENDING: 'outline',
-  APPROVED_BY_MANAGER: 'secondary',
-  APPROVED_BY_ADMIN: 'default',
+  APPROVED_BY_ADMIN: 'secondary',
+  APPROVED_BY_MANAGER: 'default',
   CORRECTION_REQUESTED: 'destructive',
   REJECTED: 'destructive',
 }

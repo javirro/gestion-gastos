@@ -6,7 +6,7 @@ import {
   listUserExpenses,
   PAGE_SIZE,
 } from '@/server/traveling-expenses/traveling-expenses.service'
-import type { ExpenseCategory } from '@/generated/prisma/client'
+import type { ExpenseCategory } from '@/generated/prisma'
 
 const VALID_CATEGORIES: ExpenseCategory[] = [
   'TRANSPORTE',
@@ -28,8 +28,16 @@ export async function GET(request: NextRequest) {
     Math.max(1, parseInt(searchParams.get('perPage') ?? String(PAGE_SIZE), 10))
   )
 
+  const VALID_STATUSES = ['PENDING', 'APPROVED_BY_MANAGER', 'APPROVED_BY_ADMIN', 'CORRECTION_REQUESTED', 'REJECTED']
+  const statusParam = searchParams.get('status') ?? ''
+  const periodParam = searchParams.get('period') ?? ''
+  const filters = {
+    status: VALID_STATUSES.includes(statusParam) ? statusParam : undefined,
+    period: /^\d{4}-\d{2}$/.test(periodParam) ? periodParam : undefined,
+  }
+
   try {
-    const result = await listUserExpenses(user.id, page, perPage)
+    const result = await listUserExpenses(user.id, page, perPage, filters)
     return apiSuccess({
       status: 200,
       message: 'Gastos obtenidos correctamente.',
@@ -60,14 +68,16 @@ export async function POST(request: NextRequest) {
 
   let metadata: {
     project?: string
+    period?: string
     description?: string
-    isInternational?: boolean
     items?: {
       date?: string
       category?: string
       amount?: number
+      isInternational?: boolean
       startingLocation?: string
       destination?: string
+      distance?: number
       description?: string
     }[]
   }
@@ -117,14 +127,16 @@ export async function POST(request: NextRequest) {
       user.id,
       {
         project: metadata.project,
+        period: metadata.period,
         description: metadata.description,
-        isInternational: metadata.isInternational ?? false,
         items: metadata.items.map((item) => ({
           date: item.date!,
           category: item.category as ExpenseCategory,
           amount: Number(item.amount),
+          isInternational: item.isInternational ?? false,
           startingLocation: item.startingLocation,
           destination: item.destination,
+          distance: item.distance,
           description: item.description,
         })),
       },

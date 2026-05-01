@@ -1,4 +1,4 @@
-import { TravelingExpenseStatus } from '@/generated/prisma/client'
+import { Area, TravelingExpenseStatus } from '@/generated/prisma'
 import {
   getUserArea,
   getUserIdsByArea,
@@ -29,27 +29,48 @@ export interface ListReviewResult {
   total: number
 }
 
+export interface ReviewFilters {
+  status?: string
+  period?: string
+  area?: string
+}
+
 export { PAGE_SIZE }
 
 export async function listExpensesForReview(
   reviewerRole: string,
   reviewerUserId: string,
   page: number,
-  perPage: number
+  perPage: number,
+  filters?: ReviewFilters
 ): Promise<ListReviewResult> {
   let expenses: Awaited<ReturnType<typeof listAllExpenses>>
   let total: number
+
+  const dbFilters = {
+    status: filters?.status,
+    period: filters?.period,
+  }
 
   if (reviewerRole === 'RESPONSABLES') {
     const area = await getUserArea(reviewerUserId)
     if (!area) throw new Error('No tienes un área asignada en el sistema.')
     const userIds = await getUserIdsByArea(area)
     ;[expenses, total] = await Promise.all([
-      listExpensesByUserIds(userIds, page, perPage),
-      countExpensesByUserIds(userIds),
+      listExpensesByUserIds(userIds, page, perPage, dbFilters),
+      countExpensesByUserIds(userIds, dbFilters),
+    ])
+  } else if (filters?.area) {
+    const userIds = await getUserIdsByArea(filters.area as Area)
+    ;[expenses, total] = await Promise.all([
+      listExpensesByUserIds(userIds, page, perPage, dbFilters),
+      countExpensesByUserIds(userIds, dbFilters),
     ])
   } else {
-    ;[expenses, total] = await Promise.all([listAllExpenses(page, perPage), countAllExpenses()])
+    ;[expenses, total] = await Promise.all([
+      listAllExpenses(page, perPage, dbFilters),
+      countAllExpenses(dbFilters),
+    ])
   }
 
   const uniqueUserIds = [...new Set(expenses.map((e) => e.userId))]
@@ -70,7 +91,7 @@ export async function listExpensesForReview(
 
 type Action = 'APPROVE' | 'REQUEST_CORRECTION' | 'REJECT'
 
-const FINAL_STATUSES: TravelingExpenseStatus[] = ['APPROVED_BY_ADMIN', 'REJECTED']
+const FINAL_STATUSES: TravelingExpenseStatus[] = ['APPROVED_BY_MANAGER', 'REJECTED']
 
 export async function updateExpenseStatusService(
   expenseId: string,
@@ -96,10 +117,10 @@ export async function updateExpenseStatusService(
 
   if (
     action === 'APPROVE' &&
-    reviewerRole !== 'RESPONSABLES' &&
-    expense.status !== 'APPROVED_BY_MANAGER'
+    reviewerRole === 'RESPONSABLES' &&
+    expense.status !== 'APPROVED_BY_ADMIN'
   ) {
-    throw new Error('El responsable del área debe aprobar el gasto antes de que administración pueda aprobarlo.')
+    throw new Error('Administración debe aprobar el gasto antes de que el responsable pueda aprobarlo.')
   }
 
   const statusMap: Record<Action, TravelingExpenseStatus> = {

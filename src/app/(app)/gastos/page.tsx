@@ -1,13 +1,15 @@
 import { getAuthUser } from '@/lib/auth/get-user'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { ExpensesTable } from './expenses-table'
+import { ExpenseFilters } from './expense-filters'
 import { listUserExpenses, PAGE_SIZE } from '@/server/traveling-expenses/traveling-expenses.service'
 import { buttonVariants } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 
 interface Props {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; status?: string; period?: string }>
 }
 
 export default async function GastosPage({ searchParams }: Props) {
@@ -19,9 +21,16 @@ export default async function GastosPage({ searchParams }: Props) {
   const params = await searchParams
   const page = Math.max(1, parseInt(params.page ?? '1', 10))
 
+  const VALID_STATUSES = ['PENDING', 'APPROVED_BY_MANAGER', 'APPROVED_BY_ADMIN', 'CORRECTION_REQUESTED', 'REJECTED']
+  const status = VALID_STATUSES.includes(params.status ?? '') ? (params.status ?? '') : ''
+  const period = /^\d{4}-\d{2}$/.test(params.period ?? '') ? (params.period ?? '') : ''
+
   let result
   try {
-    result = await listUserExpenses(user.id, page, PAGE_SIZE)
+    result = await listUserExpenses(user.id, page, PAGE_SIZE, {
+      status: status || undefined,
+      period: period || undefined,
+    })
   } catch {
     return (
       <div className="mx-auto max-w-5xl px-4 py-8">
@@ -45,10 +54,17 @@ export default async function GastosPage({ searchParams }: Props) {
           Nuevo gasto
         </Link>
       </div>
+      <div className="mb-4">
+        <Suspense>
+          <ExpenseFilters status={status} period={period} />
+        </Suspense>
+      </div>
       <ExpensesTable
         expenses={expenses}
         page={page}
         totalPages={totalPages}
+        status={status || undefined}
+        period={period || undefined}
       />
     </div>
   )

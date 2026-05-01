@@ -31,9 +31,9 @@ interface ExpenseItem {
 interface Expense {
   id: string
   project: string | null
+  period: string | null
   totalAmount: number
   description: string | null
-  isInternational: boolean
   status: string
   createdAt: string
   expenseItems: ExpenseItem[]
@@ -43,9 +43,27 @@ interface ExpensesTableProps {
   expenses: Expense[]
   page: number
   totalPages: number
+  status?: string
+  period?: string
 }
 
-export function ExpensesTable({ expenses, page, totalPages }: ExpensesTableProps) {
+function formatPeriod(period: string) {
+  const [year, month] = period.split('-')
+  return new Date(Number(year), Number(month) - 1, 1).toLocaleDateString('es-ES', {
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
+function buildPageUrl(page: number, status?: string, period?: string) {
+  const params = new URLSearchParams()
+  params.set('page', String(page))
+  if (status) params.set('status', status)
+  if (period) params.set('period', period)
+  return `/gastos?${params.toString()}`
+}
+
+export function ExpensesTable({ expenses, page, totalPages, status, period }: ExpensesTableProps) {
   const router = useRouter()
   const [, startTransition] = useTransition()
 
@@ -57,9 +75,9 @@ export function ExpensesTable({ expenses, page, totalPages }: ExpensesTableProps
             <TableRow>
               <TableHead>Fecha</TableHead>
               <TableHead>Proyecto</TableHead>
+              <TableHead>Periodo</TableHead>
               <TableHead>Importe total</TableHead>
               <TableHead>Nº gastos</TableHead>
-              <TableHead>Internacional</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className='w-10' />
             </TableRow>
@@ -82,11 +100,11 @@ export function ExpensesTable({ expenses, page, totalPages }: ExpensesTableProps
                   <TableCell className="font-medium">
                     {expense.project ?? <span className="text-muted-foreground">—</span>}
                   </TableCell>
+                  <TableCell>
+                    {expense.period ? formatPeriod(expense.period) : <span className="text-muted-foreground">—</span>}
+                  </TableCell>
                   <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
                   <TableCell>{expense.expenseItems.length}</TableCell>
-                  <TableCell>
-                    {expense.isInternational ? 'Sí' : 'No'}
-                  </TableCell>
                   <TableCell>
                     <Badge variant={STATUS_VARIANT[expense.status] ?? 'outline'}>
                       {STATUS_LABEL[expense.status] ?? expense.status}
@@ -115,7 +133,7 @@ export function ExpensesTable({ expenses, page, totalPages }: ExpensesTableProps
         <div className="flex gap-2">
           {page > 1 ? (
             <Link
-              href={`/gastos?page=${page - 1}`}
+              href={buildPageUrl(page - 1, status, period)}
               className={buttonVariants({ variant: 'outline', size: 'sm' })}
             >
               <ChevronLeft className="mr-1 size-4" />
@@ -131,7 +149,7 @@ export function ExpensesTable({ expenses, page, totalPages }: ExpensesTableProps
           )}
           {page < totalPages ? (
             <Link
-              href={`/gastos?page=${page + 1}`}
+              href={buildPageUrl(page + 1, status, period)}
               className={buttonVariants({ variant: 'outline', size: 'sm' })}
             >
               Siguiente

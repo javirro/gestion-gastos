@@ -45,8 +45,8 @@ export default async function EditExpensePage({ params }: Props) {
       <EditExpenseForm
         expenseId={expense.id}
         initialProject={expense.project ?? ''}
+        initialPeriod={expense.period ?? ''}
         initialDescription={expense.description ?? ''}
-        initialIsInternational={expense.isInternational}
         initialItems={expense.expenseItems}
       />
     </div>

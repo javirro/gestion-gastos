@@ -5,9 +5,9 @@ interface ExpenseDetailHeaderProps {
   userName: string | null
   userArea: string
   project: string | null
+  period: string | null
   description: string | null
   totalAmount: number
-  isInternational: boolean
   status: string
   correctionReason: string | null
   approvedByAdmin: boolean
@@ -16,16 +16,16 @@ interface ExpenseDetailHeaderProps {
 
 const STATUS_LABEL: Record<string, string> = {
   PENDING: 'Pendiente',
-  APPROVED_BY_MANAGER: 'Aprobado (responsable)',
   APPROVED_BY_ADMIN: 'Aprobado (admin)',
+  APPROVED_BY_MANAGER: 'Aprobado (responsable)',
   CORRECTION_REQUESTED: 'Corrección solicitada',
   REJECTED: 'Rechazado',
 }
 
 const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   PENDING: 'outline',
-  APPROVED_BY_MANAGER: 'secondary',
-  APPROVED_BY_ADMIN: 'default',
+  APPROVED_BY_ADMIN: 'secondary',
+  APPROVED_BY_MANAGER: 'default',
   CORRECTION_REQUESTED: 'destructive',
   REJECTED: 'destructive',
 }
@@ -48,9 +48,9 @@ export function ExpenseDetailHeader({
   userName,
   userArea,
   project,
+  period,
   description,
   totalAmount,
-  isInternational,
   status,
   correctionReason,
   approvedByAdmin,
@@ -86,8 +86,12 @@ export function ExpenseDetailHeader({
             <dd className="mt-0.5 text-sm">{project ?? '—'}</dd>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Internacional</dt>
-            <dd className="mt-0.5 text-sm">{isInternational ? 'Sí' : 'No'}</dd>
+            <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Periodo</dt>
+            <dd className="mt-0.5 text-sm">
+              {period
+                ? new Date(Number(period.split('-')[0]), Number(period.split('-')[1]) - 1, 1).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
+                : '—'}
+            </dd>
           </div>
           {description && (
             <div className="sm:col-span-2">

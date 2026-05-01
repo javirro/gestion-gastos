@@ -8,7 +8,7 @@ import { UserPlus } from 'lucide-react'
 import { ADMIN_ROLES } from '@/lib/auth/permissions'
 
 interface Props {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; area?: string; role?: string }>
 }
 
 export default async function UsuariosPage({ searchParams }: Props) {
@@ -19,10 +19,13 @@ export default async function UsuariosPage({ searchParams }: Props) {
 
   const params = await searchParams
   const page = Math.max(1, parseInt(params.page ?? '1', 10))
+  const area = params.area ?? ''
+  const role = params.role ?? ''
+  const filters = area || role ? { area: area || undefined, role: role || undefined } : undefined
 
   let result
   try {
-    result = await listUsers(page, PAGE_SIZE)
+    result = await listUsers(page, PAGE_SIZE, filters)
   } catch {
     return (
       <div className='mx-auto max-w-4xl px-4 py-8'>
@@ -31,8 +34,10 @@ export default async function UsuariosPage({ searchParams }: Props) {
     )
   }
 
-  const { users: formattedUsers } = result
-  const hasNextPage = formattedUsers.length === PAGE_SIZE
+  const { users: formattedUsers, total } = result
+  const hasNextPage = total !== undefined
+    ? page * PAGE_SIZE < total
+    : formattedUsers.length === PAGE_SIZE
 
   return (
     <div className='mx-auto max-w-4xl px-4 py-8'>
@@ -50,6 +55,9 @@ export default async function UsuariosPage({ searchParams }: Props) {
         users={formattedUsers}
         page={page}
         hasNextPage={hasNextPage}
+        total={total}
+        area={area}
+        role={role}
       />
     </div>
   )

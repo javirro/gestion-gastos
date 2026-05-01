@@ -1,11 +1,11 @@
 import Link from 'next/link'
-import { Users, Receipt, ClipboardCheck } from 'lucide-react'
 import { getAuthUser } from '@/lib/auth/get-user'
 import { LogoutButton } from '@/components/logout-button'
+import { NavLinks } from '@/components/nav-links'
 import { ADMIN_ROLES, REVIEW_ROLES } from '@/lib/auth/permissions'
 
 export async function Navbar() {
-  const user = await getAuthUser();
+  const user = await getAuthUser()
   const canSeeUsers = user?.role ? ADMIN_ROLES.includes(user.role) : false
   const canSeeReview = user?.role ? REVIEW_ROLES.includes(user.role) : false
 
@@ -20,35 +20,11 @@ export async function Navbar() {
             Gestión de Gastos
           </Link>
 
-          <nav className='flex items-center gap-1 sm:gap-4'>
-            {user && (
-              <Link
-                href='/gastos'
-                className='flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground'
-              >
-                <Receipt className='size-4' />
-                <span className='hidden sm:inline'>Gastos</span>
-              </Link>
-            )}
-            {canSeeReview && (
-              <Link
-                href='/responsables/gastos'
-                className='flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground'
-              >
-                <ClipboardCheck className='size-4' />
-                <span className='hidden sm:inline'>Revisión</span>
-              </Link>
-            )}
-            {canSeeUsers && (
-              <Link
-                href='/admin/usuarios'
-                className='flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground'
-              >
-                <Users className='size-4' />
-                <span className='hidden sm:inline'>Usuarios</span>
-              </Link>
-            )}
-          </nav>
+          <NavLinks
+            isLoggedIn={!!user}
+            canSeeUsers={canSeeUsers}
+            canSeeReview={canSeeReview}
+          />
         </div>
 
         <div className="flex items-center gap-3">
@@ -61,5 +37,5 @@ export async function Navbar() {
         </div>
       </div>
     </header>
-  );
+  )
 }

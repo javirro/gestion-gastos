@@ -3,7 +3,7 @@ import { getAuthUser } from '@/lib/auth/get-user'
 import { apiSuccess, apiError } from '@/lib/api/response'
 import { updateExpenseStatusService } from '@/server/traveling-expenses/traveling-expenses-review.service'
 import { editExpense } from '@/server/traveling-expenses/traveling-expenses.service'
-import type { ExpenseCategory } from '@/generated/prisma/client'
+import type { ExpenseCategory } from '@/generated/prisma'
 
 const ALLOWED_ROLES = ['ADMINISTRACION', 'DIRECTIVOS', 'RESPONSABLES']
 const VALID_ACTIONS = ['APPROVE', 'REQUEST_CORRECTION', 'REJECT'] as const
@@ -81,8 +81,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 
   let metadata: {
-    project?: string; description?: string; isInternational?: boolean
-    items?: { date?: string; category?: string; amount?: number; startingLocation?: string; destination?: string; description?: string; existingTicketUrl?: string }[]
+    project?: string; period?: string; description?: string
+    items?: { date?: string; category?: string; amount?: number; isInternational?: boolean; startingLocation?: string; destination?: string; distance?: number; description?: string; existingTicketUrl?: string }[]
   }
   try {
     metadata = JSON.parse(metadataRaw)
@@ -113,14 +113,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     await editExpense(id, user.id, {
       project: metadata.project,
+      period: metadata.period,
       description: metadata.description,
-      isInternational: metadata.isInternational ?? false,
       items: items.map((item) => ({
         date: item.date!,
         category: item.category!,
         amount: item.amount!,
+        isInternational: item.isInternational ?? false,
         startingLocation: item.startingLocation,
         destination: item.destination,
+        distance: item.distance,
         description: item.description,
         existingTicketUrl: item.existingTicketUrl,
       })),
