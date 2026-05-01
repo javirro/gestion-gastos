@@ -14,8 +14,15 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Check, MessageSquare, X } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Action = 'APPROVE' | 'REQUEST_CORRECTION' | 'REJECT'
+
+const SUCCESS_MESSAGES: Record<Action, string> = {
+  APPROVE: 'Gasto aprobado correctamente.',
+  REQUEST_CORRECTION: 'Corrección solicitada correctamente.',
+  REJECT: 'Gasto rechazado.',
+}
 
 const FINAL_STATUSES = ['APPROVED_BY_MANAGER', 'REJECTED']
 const ADMIN_PENDING_STATUS = 'APPROVED_BY_ADMIN'
@@ -72,6 +79,7 @@ export function ApproveActions({ expenseId, status, role, onSuccess }: ApproveAc
         return
       }
 
+      toast.success(SUCCESS_MESSAGES[action!])
       setAction(null)
       setCorrectionReason('')
       ;(onSuccess ?? (() => router.refresh()))()
@@ -88,9 +96,11 @@ export function ApproveActions({ expenseId, status, role, onSuccess }: ApproveAc
         <Button size="sm" variant="outline" onClick={() => setAction('APPROVE')} className="h-7 text-xs">
           <Check className="mr-1 size-3" /> Aprobar
         </Button>
-        <Button size="sm" variant="outline" onClick={() => setAction('REQUEST_CORRECTION')} className="h-7 text-xs">
-          <MessageSquare className="mr-1 size-3" /> Corrección
-        </Button>
+        {role !== 'RESPONSABLES' && (
+          <Button size="sm" variant="outline" onClick={() => setAction('REQUEST_CORRECTION')} className="h-7 text-xs">
+            <MessageSquare className="mr-1 size-3" /> Corrección
+          </Button>
+        )}
         <Button size="sm" variant="outline" onClick={() => setAction('REJECT')} className="h-7 text-xs text-destructive hover:text-destructive">
           <X className="mr-1 size-3" /> Rechazar
         </Button>

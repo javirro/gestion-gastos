@@ -7,6 +7,9 @@ import { getExpenseDetail } from '@/server/traveling-expenses/traveling-expenses
 import { ExpenseDetailHeader } from './expense-detail-header'
 import { ExpenseItemsDetail } from './expense-items-detail'
 import { ApproveActions } from '../approve-actions'
+import { ExportPdfButton } from './export-pdf-button'
+import { StatusTimeline } from './status-timeline'
+import { CategorySummary } from './category-summary'
 import { ExpenseComments } from '@/components/expense-comments'
 
 const ALLOWED_ROLES = ['ADMINISTRACION', 'DIRECTIVOS', 'RESPONSABLES']
@@ -46,7 +49,35 @@ export default async function ExpenseDetailPage({ params }: Props) {
           <ChevronLeft className="mr-1 size-4" />
           Volver
         </Link>
-        <ApproveActions expenseId={expense.id} status={expense.status} role={user.role} />
+        <div className="flex items-center gap-2">
+          {expense.status === 'APPROVED_BY_MANAGER' && (
+            <ExportPdfButton
+              expense={{
+                id: expense.id,
+                userName: expense.userName,
+                userArea: expense.userArea,
+                project: expense.project,
+                period: expense.period,
+                totalAmount: expense.totalAmount,
+                description: expense.description,
+                status: expense.status,
+                createdAt: expense.createdAt,
+                expenseItems: expense.expenseItems.map((item) => ({
+                  date: item.date,
+                  category: item.category,
+                  amount: item.amount,
+                  isInternational: item.isInternational,
+                  startingLocation: item.startingLocation,
+                  destination: item.destination,
+                  distance: item.distance,
+                  description: item.description,
+                  ticket: item.ticket,
+                })),
+              }}
+            />
+          )}
+          <ApproveActions expenseId={expense.id} status={expense.status} role={user.role} />
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -62,6 +93,17 @@ export default async function ExpenseDetailPage({ params }: Props) {
           approvedByAdmin={expense.approvedByAdmin}
           createdAt={expense.createdAt}
         />
+        <div className='grid gap-6 md:grid-cols-2'>
+          <StatusTimeline
+            status={expense.status}
+            approvedByAdmin={expense.approvedByAdmin}
+            createdAt={expense.createdAt}
+          />
+          <CategorySummary
+            items={expense.expenseItems}
+            totalAmount={expense.totalAmount}
+          />
+        </div>
         <ExpenseItemsDetail items={expense.expenseItems} />
         <ExpenseComments expenseId={expense.id} comments={expense.comments} />
       </div>
