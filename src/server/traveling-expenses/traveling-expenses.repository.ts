@@ -270,6 +270,15 @@ export async function createExpenseComment(data: {
   return prisma.expenseComment.create({ data })
 }
 
+export async function getResponsablesUserIdsByArea(area: Area): Promise<string[]> {
+  const [areaRows, roleRows] = await Promise.all([
+    prisma.user.findMany({ where: { area }, select: { userId: true } }),
+    prisma.userRole.findMany({ where: { role: 'RESPONSABLES' }, select: { userId: true } }),
+  ])
+  const areaSet = new Set(areaRows.map((r) => r.userId))
+  return roleRows.map((r) => r.userId).filter((id) => areaSet.has(id))
+}
+
 export async function getCommentsByExpenseId(travelingExpenseId: string) {
   return prisma.expenseComment.findMany({
     where: { travelingExpenseId },

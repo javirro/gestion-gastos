@@ -46,7 +46,7 @@ export default async function ExpenseDetailPage({ params }: Props) {
           <ChevronLeft className="mr-1 size-4" />
           Volver
         </Link>
-        <ApproveActions expenseId={expense.id} status={expense.status} />
+        <ApproveActions expenseId={expense.id} status={expense.status} role={user.role} />
       </div>
 
       <div className="space-y-6">

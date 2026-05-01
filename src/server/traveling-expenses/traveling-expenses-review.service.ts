@@ -9,8 +9,11 @@ import {
   countExpensesByUserIds,
   getExpenseById,
   updateExpenseStatus,
+  getResponsablesUserIdsByArea,
 } from './traveling-expenses.repository'
 import { mapToDto, PAGE_SIZE, type TravelingExpenseDto } from './traveling-expenses.service'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { sendEmail } from '@/lib/email/nodemailer'
 
 export interface ReviewExpenseDto extends TravelingExpenseDto {
   userName: string | null
@@ -135,6 +138,31 @@ export async function updateExpenseStatusService(
     approvedByAdmin: action === 'APPROVE' && reviewerRole !== 'RESPONSABLES' ? true : undefined,
     correctionReason: action === 'REQUEST_CORRECTION' ? correctionReason : null,
   })
+
+  if (action === 'APPROVE' && reviewerRole !== 'RESPONSABLES') {
+    const ownerArea = await getUserArea(expense.userId)
+    if (ownerArea) {
+      const responsableIds = await getResponsablesUserIdsByArea(ownerArea)
+      if (responsableIds.length > 0) {
+        const supabase = createAdminClient()
+        const emails = (
+          await Promise.all(responsableIds.map((id) => supabase.auth.admin.getUserById(id)))
+        )
+          .map((r) => r.data.user?.email)
+          .filter((e): e is string => !!e)
+
+        await Promise.all(
+          emails.map((email) =>
+            sendEmail(
+              email,
+              'Gasto pendiente de tu aprobación',
+              `Hola,\n\nAdministración ha aprobado un gasto del área ${ownerArea} y está pendiente de tu aprobación.\n\nPuedes revisarlo en la sección de revisión de gastos.\n\nSaludos.`
+            ).catch(() => {})
+          )
+        )
+      }
+    }
+  }
 }
 
 export async function getExpenseDetail(

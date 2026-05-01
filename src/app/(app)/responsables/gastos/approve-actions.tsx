@@ -18,6 +18,7 @@ import { Check, MessageSquare, X } from 'lucide-react'
 type Action = 'APPROVE' | 'REQUEST_CORRECTION' | 'REJECT'
 
 const FINAL_STATUSES = ['APPROVED_BY_MANAGER', 'REJECTED']
+const ADMIN_PENDING_STATUS = 'APPROVED_BY_ADMIN'
 
 const ACTION_TITLES: Record<Action, string> = {
   APPROVE: '¿Aprobar este gasto?',
@@ -34,10 +35,11 @@ const ACTION_DESCRIPTIONS: Record<Action, string> = {
 interface ApproveActionsProps {
   expenseId: string
   status: string
+  role: string
   onSuccess?: () => void
 }
 
-export function ApproveActions({ expenseId, status, onSuccess }: ApproveActionsProps) {
+export function ApproveActions({ expenseId, status, role, onSuccess }: ApproveActionsProps) {
   const router = useRouter()
   const [action, setAction] = useState<Action | null>(null)
   const [correctionReason, setCorrectionReason] = useState('')
@@ -46,6 +48,10 @@ export function ApproveActions({ expenseId, status, onSuccess }: ApproveActionsP
 
   if (FINAL_STATUSES.includes(status)) {
     return <span className="text-sm text-muted-foreground">—</span>
+  }
+
+  if (role !== 'RESPONSABLES' && status === ADMIN_PENDING_STATUS) {
+    return <span className="text-sm text-muted-foreground">Esperando aprobación responsable</span>
   }
 
   async function handleConfirm() {

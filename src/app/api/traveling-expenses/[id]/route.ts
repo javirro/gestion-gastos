@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { getAuthUser } from '@/lib/auth/get-user'
 import { apiSuccess, apiError } from '@/lib/api/response'
 import { updateExpenseStatusService } from '@/server/traveling-expenses/traveling-expenses-review.service'
@@ -52,6 +53,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       action as ValidAction,
       correctionReason
     )
+    revalidatePath('/responsables/gastos')
     return apiSuccess({ status: 200, message: 'Estado del gasto actualizado correctamente.' })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error al actualizar el gasto.'

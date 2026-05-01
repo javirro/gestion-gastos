@@ -70,6 +70,7 @@ export default async function RevisionGastosPage({ searchParams }: Props) {
         expenses={expenses}
         page={page}
         totalPages={totalPages}
+        role={user.role}
         status={status || undefined}
         period={period || undefined}
         area={area || undefined}

@@ -25,12 +25,13 @@ interface ReviewExpensesTableProps {
   expenses: ReviewExpense[]
   page: number
   totalPages: number
+  role: string
   status?: string
   period?: string
   area?: string
 }
 
-export function ReviewExpensesTable({ expenses, page, totalPages, status, period, area }: ReviewExpensesTableProps) {
+export function ReviewExpensesTable({ expenses, page, totalPages, role, status, period, area }: ReviewExpensesTableProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -90,6 +91,7 @@ export function ReviewExpensesTable({ expenses, page, totalPages, status, period
                     <ApproveActions
                       expenseId={expense.id}
                       status={expense.status}
+                      role={role}
                       onSuccess={handleRefresh}
                     />
                   </TableCell>
